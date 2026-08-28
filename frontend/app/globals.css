@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #0f172a; /* Slate 900 */
+  --foreground: #f8fafc; /* Slate 50 */
+  
+  --brand: #3b82f6; /* Blue 500 */
+  --brand-hover: #2563eb; /* Blue 600 */
+  
+  --surface: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity for glass */
+  --surface-hover: rgba(51, 65, 85, 0.8); /* Slate 700 with opacity */
+  --border: rgba(148, 163, 184, 0.2); /* Slate 400 with opacity */
+  
+  --danger: #ef4444; /* Red 500 */
+  --warning: #f59e0b; /* Amber 500 */
+  --success: #10b981; /* Emerald 500 */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  /* subtle radial gradient for a premium feel */
+  background-image: radial-gradient(circle at top, #1e293b 0%, transparent 40%), 
+                    radial-gradient(circle at bottom right, #1e293b 0%, transparent 30%);
+}
+
+.glass-panel {
+  background: var(--surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
