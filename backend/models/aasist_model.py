@@ -148,9 +148,8 @@ def predict(audio_bytes: bytes) -> float:
         print(f"AASIST inference error: {error}")
         return 0.5
         
-
-        if __name__ == "__main__":
-         import sys
+if __name__ == "__main__":
+    import sys
     from pathlib import Path
 
     if len(sys.argv) < 2:
@@ -168,3 +167,24 @@ def predict(audio_bytes: bytes) -> float:
     audio_bytes = Path(audio_path).read_bytes()
     fake_prob = predict(audio_bytes)
     print(f"Fake probability: {fake_prob:.4f}")
+
+def _get_model():
+    """
+    Force initialization of the AASIST model and return it.
+    Used for warmup at server startup.
+    """
+    # Call your existing loader once; adjust name if different
+    # If your model is created inside predict(), adapt this accordingly.
+    # For most setups, simply calling predict once with tiny dummy audio is enough.
+    import numpy as np
+    import io
+    import soundfile as sf
+
+    sr = 16000
+    silence = np.zeros(sr, dtype=np.float32)
+    buf = io.BytesIO()
+    sf.write(buf, silence, sr, format="WAV")
+    dummy_bytes = buf.getvalue()
+
+    # Run a dummy prediction to force model load
+    return predict(dummy_bytes)

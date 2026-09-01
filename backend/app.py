@@ -15,7 +15,17 @@ from backend.fusion import compute_fusion
 from backend.reporting import generate_report
 
 app = FastAPI(title="SIH 104 - Deepfake Voice Detection API")
-    
+@app.on_event("startup")
+async def warmup_aasist():
+    # Only ensure the AASIST model object is created; no heavy audio work.
+    try:
+        # This forces the model to load once at startup
+        _ = aasist_model._get_model()
+        print("AASIST warmup: model loaded")
+    except Exception as e:
+        # If warmup fails, we still let the app start; first request will try to load
+        print("AASIST warmup error (non-fatal):", e)
+
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
