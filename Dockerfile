@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend and frontend source code.
 WORKDIR /app
 COPY backend/ /app/backend/
+COPY aasist/ /app/aasist/
 COPY frontend/ /app/frontend/
 
 # Install and build the frontend.
