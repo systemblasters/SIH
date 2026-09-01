@@ -10,12 +10,14 @@ import librosa
 import soundfile as sf
 import numpy as np
 
-from models import aasist_model, wav2vec_model, spectro_cnn_model
-from fusion import compute_fusion
-from reporting import generate_report
+from backend.models import aasist_model, wav2vec_model, spectro_cnn_model
+from backend.fusion import compute_fusion
+from backend.reporting import generate_report
 
 app = FastAPI(title="SIH 104 - Deepfake Voice Detection API")
-
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,

@@ -25,7 +25,7 @@ else:
     )
 
 # Official model from clovaai/aasist/models/AASIST.py
-from models.AASIST import Model
+from backend.models.AASIST import Model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
