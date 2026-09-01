@@ -139,3 +139,24 @@ def predict(audio_bytes: bytes) -> float:
     except Exception as error:
         print(f"AASIST inference error: {error}")
         return 0.5
+        
+
+        if __name__ == "__main__":
+         import sys
+    from pathlib import Path
+
+    if len(sys.argv) < 2:
+        print("Usage: python aasist_model.py <audio_file>")
+        print("Example: python aasist_model.py ..\\voicesampleH2.mp3")
+        sys.exit(0)
+
+    audio_path = sys.argv[1]
+    print(f"Analyzing: {audio_path}")
+
+    if not Path(audio_path).exists():
+        print(f"Error: File not found: {audio_path}")
+        sys.exit(1)
+
+    audio_bytes = Path(audio_path).read_bytes()
+    fake_prob = predict(audio_bytes)
+    print(f"Fake probability: {fake_prob:.4f}")

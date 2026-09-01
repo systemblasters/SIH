@@ -12,7 +12,25 @@ interface AnalysisResult {
     wav2vec: number;
     spectro_cnn: number;
   };
-  report: string;
+  report:
+  | string
+  | {
+    case_details: {
+      job_id: string;
+      timestamp: string;
+      filename: string;
+    };
+    risk_assessment: {
+      risk_level: string;
+      deepfake_probability: number;
+      verdict: string;
+    };
+    model_results: Record<string, number>;
+    technical_findings: Record<string, string>;
+    interpretation: string;
+    recommended_actions: string[];
+    disclaimer: string;
+  };
 }
 
 export default function Home() {
@@ -167,11 +185,157 @@ export default function Home() {
               {/* Gemini AI Report */}
               <div className="flex-1">
                 <p className="text-sm font-semibold mb-2 text-gray-300 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-brand" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"></path></svg>
+                  <svg
+                    className="w-4 h-4 text-brand"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   AI Forensic Report
                 </p>
-                <div className="bg-surface/80 p-4 rounded-lg border border-border text-sm leading-relaxed text-gray-300 h-full">
-                  {result.report}
+
+                <div className="bg-surface/80 p-4 rounded-lg border border-border text-sm leading-relaxed text-gray-300 h-full whitespace-pre-wrap break-words text-left">
+                  {typeof result.report === "string" ? (
+                    <p className="whitespace-pre-wrap break-words">{result.report}</p>
+                  ) : (
+                    <div className="space-y-5 text-left text-gray-200">
+                      {/* Case details */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Case details
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <div className="min-w-0">
+                            <p className="mb-1 text-xs text-gray-500">Job ID</p>
+                            <p className="break-all text-sm text-gray-200">
+                              {result.report.case_details?.job_id || "N/A"}
+                            </p>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="mb-1 text-xs text-gray-500">Analysis time</p>
+                            <p className="break-words text-sm text-gray-200">
+                              {result.report.case_details?.timestamp || "N/A"}
+                            </p>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="mb-1 text-xs text-gray-500">Audio file</p>
+                            <p className="break-all text-sm text-gray-200">
+                              {result.report.case_details?.filename || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Risk assessment */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Risk assessment
+                        </h3>
+
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <span
+                            className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${result.risk_level === "high"
+                              ? "bg-red-500/20 text-red-300"
+                              : result.risk_level === "medium"
+                                ? "bg-yellow-500/20 text-yellow-300"
+                                : "bg-green-500/20 text-green-300"
+                              }`}
+                          >
+                            {result.report.risk_assessment?.risk_level || result.risk_level?.toUpperCase()}
+                          </span>
+
+                          <p className="text-sm font-semibold text-gray-100">
+                            {result.report.risk_assessment?.deepfake_probability ?? 0}% deepfake probability
+                          </p>
+                        </div>
+
+                        <p className="mt-3 leading-6 text-gray-300">
+                          {result.report.risk_assessment?.verdict}
+                        </p>
+                      </section>
+
+                      {/* Model results */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Model results
+                        </h3>
+
+                        <div className="space-y-2">
+                          {Object.entries(result.report.model_results || {}).map(([modelName, score]) => (
+                            <div
+                              className="flex items-center justify-between gap-4 rounded-md bg-white/[0.03] px-3 py-2"
+                              key={modelName}
+                            >
+                              <span className="text-sm text-gray-300">{modelName}</span>
+                              <strong className="text-sm text-gray-100">{String(score)}%</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* Technical findings */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Technical findings
+                        </h3>
+
+                        <div className="space-y-2">
+                          {Object.entries(result.report.technical_findings || {}).map(([finding, value]) => (
+                            <div
+                              className="flex flex-col gap-1 rounded-md bg-white/[0.03] px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+                              key={finding}
+                            >
+                              <span className="text-sm text-gray-300">✓ {finding}</span>
+                              <strong className="text-sm font-medium text-gray-100">{String(value)}</strong>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* Interpretation */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Interpretation
+                        </h3>
+
+                        <p className="leading-7 text-gray-300">
+                          {result.report.interpretation}
+                        </p>
+                      </section>
+
+                      {/* Recommended actions */}
+                      <section className="border-b border-border pb-4">
+                        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                          Recommended actions
+                        </h3>
+
+                        <ul className="list-disc space-y-2 pl-5 leading-6 text-gray-300">
+                          {(result.report.recommended_actions || []).map((action: string) => (
+                            <li key={action}>{action}</li>
+                          ))}
+                        </ul>
+                      </section>
+
+                      {/* Disclaimer */}
+                      <section className="rounded-lg border border-amber-400/20 bg-amber-400/10 p-4">
+                        <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-amber-200">
+                          Disclaimer
+                        </h3>
+
+                        <p className="text-sm leading-6 text-amber-100/90">
+                          {result.report.disclaimer}
+                        </p>
+                      </section>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -33,7 +33,7 @@ class AnalyzeResponse(BaseModel):
     overall_deepfake_probability: float
     risk_level: str
     per_model_scores: Dict[str, float]
-    report: str
+    report: Dict[str, Any]
 
 def process_audio_in_chunks(audio_bytes: bytes, chunk_duration_sec: int = 2):
     """
@@ -77,12 +77,9 @@ async def analyze_file(file: UploadFile = File(...)):
     spectro_scores = []
     
     for chunk in chunks:
-      aasist_scores.append(aasist_model.predict(chunk))
-
-    # These two models are not yet trained/integrated.
-    # Keep their displayed score neutral until real checkpoints are added.
-    wav2vec_scores.append(0.5)
-    spectro_scores.append(0.5)
+       aasist_scores.append(aasist_model.predict(chunk))
+       wav2vec_scores.append(wav2vec_model.predict(chunk))
+       spectro_scores.append(spectro_cnn_model.predict_fake_probability(chunk))
         
     aasist_score = sum(aasist_scores) / len(aasist_scores)
     wav2vec_score = sum(wav2vec_scores) / len(wav2vec_scores)
@@ -97,9 +94,14 @@ async def analyze_file(file: UploadFile = File(...)):
         "spectral_smoothness": "Synthetic artifacting detected" if fusion_res.risk_level == "high" else "Natural"
     }
     
-    # Reporting
-    report = generate_report(fusion_res.model_dump(), cues)
-    
+     # Reporting
+    report_input = fusion_res.model_dump()
+    report_input["job_id"] = job_id
+    report_input["timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    report_input["filename"] = file.filename or "uploaded_audio"
+
+    report = generate_report(report_input, cues)
+
     result = {
         "job_id": job_id,
         "overall_deepfake_probability": fusion_res.overall_probability,
@@ -108,10 +110,10 @@ async def analyze_file(file: UploadFile = File(...)):
         "report": report,
         "status": "completed"
     }
-    
+
     # Store job
     jobs[job_id] = result
-    
+
     return result
 
 @app.get("/analyze/status/{job_id}")
