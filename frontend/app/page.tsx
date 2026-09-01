@@ -54,9 +54,8 @@ export default function Home() {
     formData.append("file", file);
 
     try {
-      // In Docker compose, we access backend at NEXT_PUBLIC_BACKEND_URL or localhost:8000
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      const res = await fetch(`${baseUrl}/analyze-file`, {
+      // /api is forwarded by Next.js to the FastAPI backend inside the same Render container.
+      const res = await fetch("/api/analyze-file", {
         method: "POST",
         body: formData,
       });

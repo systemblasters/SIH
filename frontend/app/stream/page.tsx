@@ -24,8 +24,10 @@ export default function Stream() {
     setIsStreaming(true);
     setHistory([]);
 
-    const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace("http", "ws") || "ws://localhost:8000";
-    wsRef.current = new WebSocket(`${baseUrl}/analyze-stream`);
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const wsUrl = `${protocol}://${window.location.host}/api/analyze-stream`;
+
+    wsRef.current = new WebSocket(wsUrl);
 
     wsRef.current.onmessage = (event) => {
       const data: StreamResult = JSON.parse(event.data);
@@ -67,8 +69,8 @@ export default function Stream() {
         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
           Real-Time Monitoring
         </h1>
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="px-4 py-2 rounded-lg bg-surface border border-border hover:bg-surface-hover transition-colors font-medium"
         >
           ← Back to Upload
@@ -81,14 +83,13 @@ export default function Stream() {
             <h2 className="text-xl font-semibold">Live Call Interception</h2>
             <p className="text-sm text-gray-400 mt-1">Simulating continuous chunk analysis</p>
           </div>
-          
+
           <button
             onClick={isStreaming ? stopStream : startStream}
-            className={`px-6 py-3 rounded-lg font-bold transition-all shadow-lg ${
-              isStreaming 
-                ? "bg-danger hover:bg-red-600 text-white shadow-red-500/20 animate-pulse" 
+            className={`px-6 py-3 rounded-lg font-bold transition-all shadow-lg ${isStreaming
+                ? "bg-danger hover:bg-red-600 text-white shadow-red-500/20 animate-pulse"
                 : "bg-success hover:bg-emerald-600 text-white shadow-emerald-500/20"
-            }`}
+              }`}
           >
             {isStreaming ? "Stop Monitoring" : "Start Monitoring"}
           </button>
@@ -101,11 +102,10 @@ export default function Stream() {
             <p className="text-gray-400 mb-2">Live Deepfake Probability</p>
             {latestResult ? (
               <div className="flex items-end gap-4">
-                <span className={`text-6xl font-black ${
-                  latestResult.risk_level === 'high' ? 'text-danger' :
-                  latestResult.risk_level === 'medium' ? 'text-warning' :
-                  'text-success'
-                }`}>
+                <span className={`text-6xl font-black ${latestResult.risk_level === 'high' ? 'text-danger' :
+                    latestResult.risk_level === 'medium' ? 'text-warning' :
+                      'text-success'
+                  }`}>
                   {(latestResult.overall_probability * 100).toFixed(1)}%
                 </span>
                 <span className="text-xl pb-2 text-gray-400 uppercase tracking-widest">{latestResult.risk_level}</span>
@@ -136,14 +136,13 @@ export default function Stream() {
             </div>
           )}
           {history.map((res, i) => (
-            <div 
+            <div
               key={i}
-              className={`flex-1 rounded-t-sm transition-all duration-300 ease-in-out ${
-                res.risk_level === 'high' ? 'bg-danger' :
-                res.risk_level === 'medium' ? 'bg-warning' :
-                'bg-success'
-              }`}
-              style={{ 
+              className={`flex-1 rounded-t-sm transition-all duration-300 ease-in-out ${res.risk_level === 'high' ? 'bg-danger' :
+                  res.risk_level === 'medium' ? 'bg-warning' :
+                    'bg-success'
+                }`}
+              style={{
                 height: `${res.overall_probability * 100}%`,
                 opacity: 0.3 + (i / history.length) * 0.7 // fade out older chunks
               }}
