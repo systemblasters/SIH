@@ -25,7 +25,15 @@ else:
     )
 
 # Official model from clovaai/aasist/models/AASIST.py
-from backend.models.AASIST import Model
+import sys
+from pathlib import Path
+
+# Ensure /app/aasist is on the Python path inside Docker
+AASIST_ROOT = Path("/app/aasist")
+if AASIST_ROOT.exists() and str(AASIST_ROOT) not in sys.path:
+    sys.path.insert(0, str(AASIST_ROOT))
+
+from models.AASIST import Model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
