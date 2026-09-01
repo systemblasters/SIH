@@ -97,20 +97,21 @@ async def analyze_file(file: UploadFile = File(...)):
     spectro_scores = []
     
     for chunk in chunks:
-    # pyrefly: ignore [parse-error]
-    try:
-        aasist_scores.append(aasist_model.predict(chunk))
-    except Exception as e:
-        print("AASIST predict error:", e)
-        aasist_scores.append(0.5)
+        try:
+            aasist_scores.append(aasist_model.predict(chunk))
+        except Exception as e:
+            print("AASIST predict error:", e)
+            aasist_scores.append(0.5)
 
-    # Temporarily skip wav2vec and SpectroCNN to avoid crashes
-    wav2vec_scores.append(0.5)
-    spectro_scores.append(0.5)
-        
+        # Temporarily skip wav2vec and SpectroCNN to avoid crashes
+        wav2vec_scores.append(0.5)
+        spectro_scores.append(0.5)
+
+    # These must be outside (after) the for loop
     aasist_score = sum(aasist_scores) / len(aasist_scores)
     wav2vec_score = sum(wav2vec_scores) / len(wav2vec_scores)
     spectro_score = sum(spectro_scores) / len(spectro_scores)
+        
     
     # Fusion
     fusion_res = compute_fusion(aasist_score, wav2vec_score, spectro_score)
