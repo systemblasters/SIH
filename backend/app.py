@@ -15,27 +15,7 @@ from backend.fusion import compute_fusion
 from backend.reporting import generate_report
 
 app = FastAPI(title="SIH 104 - Deepfake Voice Detection API")
-@app.on_event("startup")
-async def warmup_models():
-    import numpy as np
-    import io
-    import soundfile as sf
-
-    sr = 16000
-    silence = np.zeros(sr, dtype=np.float32)
-    buf = io.BytesIO()
-    sf.write(buf, silence, sr, format="WAV")
-    dummy_bytes = buf.getvalue()
-
-    try:
-        _ = aasist_model.predict(dummy_bytes)
-        print("AASIST warmup OK")
-    except Exception as e:
-        print("AASIST warmup error:", e)
-
-    # Temporarily skip wav2vec and SpectroCNN warmup to avoid startup crashes
-    print("Wav2Vec warmup: skipped for now")
-    print("SpectroCNN warmup: skipped for now")
+    
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
