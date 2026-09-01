@@ -105,23 +105,23 @@ async def analyze_file(file: UploadFile = File(...)):
     spectro_scores = []
     
     for chunk in chunks:
-    try:
-        aasist_scores.append(aasist_model.predict(chunk))
-    except Exception as e:
-        print("AASIST predict error:", e)
-        aasist_scores.append(0.5)
+        try:
+            aasist_scores.append(aasist_model.predict(chunk))
+        except Exception as e:
+            print("AASIST predict error:", e)
+            aasist_scores.append(0.5)
 
-    try:
-        wav2vec_scores.append(wav2vec_model.predict(chunk))
-    except Exception as e:
-        print("Wav2Vec predict error:", e)
-        wav2vec_scores.append(0.5)
+        try:
+            wav2vec_scores.append(wav2vec_model.predict(chunk))
+        except Exception as e:
+            print("Wav2Vec predict error:", e)
+            wav2vec_scores.append(0.5)
 
-    try:
-        spectro_scores.append(spectro_cnn_model.predict_fake_probability(chunk))
-    except Exception as e:
-        print("SpectroCNN predict error:", e)
-        spectro_scores.append(0.5)
+        try:
+            spectro_scores.append(spectro_cnn_model.predict_fake_probability(chunk))
+        except Exception as e:
+            print("SpectroCNN predict error:", e)
+            spectro_scores.append(0.5)
         
     aasist_score = sum(aasist_scores) / len(aasist_scores)
     wav2vec_score = sum(wav2vec_scores) / len(wav2vec_scores)
