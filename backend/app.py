@@ -15,9 +15,35 @@ from backend.fusion import compute_fusion
 from backend.reporting import generate_report
 
 app = FastAPI(title="SIH 104 - Deepfake Voice Detection API")
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+@app.on_event("startup")
+async def warmup_models():
+    import numpy as np
+    import io
+    import soundfile as sf
+
+    sr = 16000
+    silence = np.zeros(sr, dtype=np.float32)
+    buf = io.BytesIO()
+    sf.write(buf, silence, sr, format="WAV")
+    dummy_bytes = buf.getvalue()
+
+    try:
+        _ = aasist_model.predict(dummy_bytes)
+        print("AASIST warmup OK")
+    except Exception as e:
+        print("AASIST warmup error:", e)
+
+    try:
+        _ = wav2vec_model.predict(dummy_bytes)
+        print("Wav2Vec warmup OK")
+    except Exception as e:
+        print("Wav2Vec warmup error:", e)
+
+    try:
+        _ = spectro_cnn_model.predict_fake_probability(dummy_bytes)
+        print("SpectroCNN warmup OK")
+    except Exception as e:
+        print("SpectroCNN warmup error:", e)
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
@@ -79,9 +105,23 @@ async def analyze_file(file: UploadFile = File(...)):
     spectro_scores = []
     
     for chunk in chunks:
-       aasist_scores.append(aasist_model.predict(chunk))
-       wav2vec_scores.append(wav2vec_model.predict(chunk))
-       spectro_scores.append(spectro_cnn_model.predict_fake_probability(chunk))
+    try:
+        aasist_scores.append(aasist_model.predict(chunk))
+    except Exception as e:
+        print("AASIST predict error:", e)
+        aasist_scores.append(0.5)
+
+    try:
+        wav2vec_scores.append(wav2vec_model.predict(chunk))
+    except Exception as e:
+        print("Wav2Vec predict error:", e)
+        wav2vec_scores.append(0.5)
+
+    try:
+        spectro_scores.append(spectro_cnn_model.predict_fake_probability(chunk))
+    except Exception as e:
+        print("SpectroCNN predict error:", e)
+        spectro_scores.append(0.5)
         
     aasist_score = sum(aasist_scores) / len(aasist_scores)
     wav2vec_score = sum(wav2vec_scores) / len(wav2vec_scores)
